@@ -1,3 +1,5 @@
+import {save} from 'file-saver';
+
 const overlay = $("#overlay");
 const btnUpload = $("#btn-upload");
 const dropZoneElm = $("#drop-zone");
@@ -32,7 +34,9 @@ dropZoneElm.on('drop', (evt) => {
     uploadImages(imageFiles);
 });
 mainElm.on('click', '.image:not(.loader)', (evt)=> {
-    evt.target.requestFullscreen();
+    if(evt?.target.classList.contains("image-container")){
+        evt.target.requestFullscreen();
+    }
 });
 
 function uploadImages(imageFiles){
@@ -67,10 +71,11 @@ function loadAllImages() {
     jqxhr.done((imageUrlList) => {
         imageUrlList.forEach((imageUrl) => {
             const divElm = $(`<div class="image"></div>`);
+            divElm.addClass('image-container');
             divElm.css('background-image', `url(${imageUrl})`);
 
             // Add download icon to the image
-            const downloadIcon = $('<i class="download-icon fas fa-download"><svg width="40px" height="40px" viewBox="-2.4 -2.4 28.80 28.80" fill="none" xmlns="http://www.w3.org/2000/svg">\n' +
+            const downloadIcon = $('<button type="button" class="btn btn-light"><svg width="40px" height="40px" viewBox="-2.4 -2.4 28.80 28.80" fill="none" xmlns="http://www.w3.org/2000/svg">\n' +
                 '\n' +
                 '<g id="SVGRepo_bgCarrier" stroke-width="0">\n' +
                 '\n' +
@@ -82,26 +87,24 @@ function loadAllImages() {
                 '\n' +
                 '<g id="SVGRepo_iconCarrier"> <path d="M3 15C3 17.8284 3 19.2426 3.87868 20.1213C4.75736 21 6.17157 21 9 21H15C17.8284 21 19.2426 21 20.1213 20.1213C21 19.2426 21 17.8284 21 15" stroke="#1C274C" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/> <path d="M12 3V16M12 16L16 11.625M12 16L8 11.625" stroke="#1C274C" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/> </g>\n' +
                 '\n' +
-                '</svg></i>');
+                '</svg></button>');
+
+            downloadIcon.addClass('download-button');
+            downloadIcon.addClass('download-icon');
+
             divElm.append(downloadIcon);
 
             mainElm.append(divElm);
         });
     });
     jqxhr.fail(() => {});
+
 }
 
-mainElm.on('click', (evt) => {
-    const imageDiv = $(evt.target).parent().parent();
-    const imageUrl = imageDiv.css('background-image').replace(/^url\(['"](.+)['"]\)/, '$1');
-
-    // Create a temporary anchor element to trigger the download
-    const downloadLink = document.createElement('a');
-    downloadLink.href = imageUrl;
-    downloadLink.download = 'image.jpg';
-    downloadLink.target = '_blank';
-    downloadLink.style.display = 'none';
-    document.body.appendChild(downloadLink);
-    downloadLink.click();
-    document.body.removeChild(downloadLink);
+mainElm.on('click', (evt)=> {
+    if((evt?.target.classList.contains("download-icon"))){
+        const downUrl = $(evt.target).parents('div').css('background-image').replace('url("', '').replace('")', '');;
+        const imageName = downUrl.replace(`${REST_API_URL}/images/`, "");
+        save(downUrl, imageName);
+    }
 });
