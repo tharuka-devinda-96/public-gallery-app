@@ -1,0 +1,12 @@
+**/.idea
+**/.vscode
+**/target/classes
+**/target/generated-sources
+**/target/generated-test-sources
+**/target/test-classes
+**/out
+**/node_modules
+**/.parcel-cache
+**/dist
+
+**/*.iml
